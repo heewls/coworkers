@@ -55,7 +55,6 @@ export default function ManageGroup({ groupData, groupNames }: ManageGroupProps)
             return (
               <Input
                 {...inputProps}
-                name="name"
                 placeholder="팀 이름을 입력해 주세요."
                 onBlur={onBlur}
                 hasError={!!errors.name}
