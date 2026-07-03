@@ -1,7 +1,6 @@
 'use client';
 
 import clsx from 'clsx';
-import FormField from '../../common/formField';
 import BouncingDots from '@/components/common/loading/BouncingDots';
 import CalendarSelect from '../../calendar/CalendarSelect';
 import WeeklySelect from './WeeklySelect';
@@ -11,6 +10,9 @@ import { TaskItemProps } from '../type';
 import Button from '@/components/common/Button';
 import { ModalFooter } from '@/components/common/modal';
 import Frequency from './Frequency';
+import Fields from '@/components/common/formField/Fields';
+import Input from '@/components/common/formField/compound/Input';
+import Textarea from '@/components/common/formField/compound/Textarea';
 
 export default function ManageTaskItem({
   detailTask,
@@ -20,6 +22,10 @@ export default function ManageTaskItem({
   createOrEditModalId,
 }: TaskItemProps) {
   const {
+    form: {
+      register,
+      formState: { isValid, isSubmitting },
+    },
     taskItem,
     selectedTime,
     weekDays,
@@ -27,13 +33,10 @@ export default function ManageTaskItem({
     isOnce,
     isCalendarOpen,
     isTimeOpen,
-    isPending,
-    isTaskItemValid,
     select,
-    handleInputChange,
     handleCalendarDateChange,
     handleFrequencyChange,
-    createOrEditSubmit,
+    onSubmit,
     toggleDay,
     updateTime,
     closeTaskItemModal,
@@ -54,14 +57,14 @@ export default function ManageTaskItem({
             작성해 주시면 좋습니다.
           </p>
         </div>
-        <form onSubmit={createOrEditSubmit} className="flex flex-col gap-6">
-          <FormField
-            field="input"
-            name="name"
-            value={taskItem.name}
-            onChange={handleInputChange}
+        <form onSubmit={onSubmit} className="flex flex-col gap-6">
+          <Fields
             label="할 일 제목"
-            placeholder="할 일 제목을 입력해 주세요."
+            render={() => {
+              const { ...inputProps } = register('name');
+
+              return <Input {...inputProps} placeholder="할 일 제목을 입력해 주세요." />;
+            }}
           />
 
           <div className="flex flex-col gap-2">
@@ -109,14 +112,20 @@ export default function ManageTaskItem({
             <WeeklySelect selectedDays={weekDays} toggleDay={(idx: number) => toggleDay(idx)} />
           )}
 
-          <FormField
-            field="textarea"
-            name="description"
-            value={taskItem.description}
-            onChange={handleInputChange}
+          <Fields
             label="할 일 메모"
-            placeholder="메모를 입력해 주세요."
-            height={75}
+            render={() => {
+              const { ref, ...textareaProps } = register('description');
+
+              return (
+                <Textarea
+                  {...textareaProps}
+                  ref={ref}
+                  placeholder="메모를 입력해 주세요."
+                  height={75}
+                />
+              );
+            }}
           />
           <ModalFooter className="w-full">
             <Button onClick={closeTaskItemModal} variant="outline-primary" size="fullWidth">
@@ -126,9 +135,9 @@ export default function ManageTaskItem({
               type="submit"
               variant="solid"
               size="fullWidth"
-              disabled={!detailTask && (!isTaskItemValid || isPending)}
+              disabled={!detailTask && (!isValid || isSubmitting)}
             >
-              {isPending ? <BouncingDots /> : createOrEdit}
+              {isSubmitting ? <BouncingDots /> : createOrEdit}
             </Button>
           </ModalFooter>
         </form>
